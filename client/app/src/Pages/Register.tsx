@@ -10,11 +10,15 @@ import {
   Button,
   Checkbox,
   Stack,
+  FormControl,
+  FormLabel,
+  FormHelperText,
 } from "@chakra-ui/react";
-import { FormControl, FormLabel, FormHelperText } from "@chakra-ui/react";
 import char1 from "../assets/images/char1.jpg";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 interface RegisterProps {}
 
@@ -48,12 +52,51 @@ const Register: FC<RegisterProps> = () => {
     password: Yup.string()
       .required("Password is required")
       .min(8, "Must be at least 8 characters")
+      //add regex for more complex password later
       .matches(/[a-zA-Z]/, "Password can onyl contain letters"),
     checked: Yup.boolean().oneOf([true], "This field must be checked"),
   });
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement> | any) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement> | any) => {
     e.preventDefault();
+    try {
+      const res = await fetch("http://localhost:5001/api/register", {
+        method: "POST",
+        headers: {
+          mode: "cors",
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(formik.values),
+      });
+      const response = await res.json();
+      if (res.status === 200) {
+        toast.success(response, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: false,
+          progress: undefined,
+          theme: "colored",
+        });
+      } else {
+        toast.error(response, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: false,
+          progress: undefined,
+          theme: "colored",
+        });
+      }
+    } catch (err) {
+      console.log("err", err);
+    }
+
     console.log("formik", formik);
     console.log("obj", Object.keys(formik.errors).length);
   };
