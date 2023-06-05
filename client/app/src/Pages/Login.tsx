@@ -8,8 +8,6 @@ import {
   Heading,
   InputRightElement,
   Button,
-} from "@chakra-ui/react";
-import {
   FormControl,
   FormLabel,
   FormErrorMessage,
@@ -18,6 +16,7 @@ import {
 import char2 from "../assets/images/char2.jpg";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { toast } from "react-toastify";
 
 interface LoginProps {}
 
@@ -46,10 +45,46 @@ const Login: FC<LoginProps> = () => {
       .matches(/[a-zA-Z]/, "Password can onyl contain letters"),
   });
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement> | any) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement> | any) => {
     e.preventDefault();
+    try {
+      const res = await fetch("http://localhost:5001/api/login", {
+        method: "POST",
+        headers: {
+          mode: "cors",
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(formik.values),
+      });
+      const response = await res.json();
+      if (res.status === 200) {
+        toast.success(response, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: false,
+          progress: undefined,
+          theme: "colored",
+        });
+      } else {
+        toast.error(response, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: false,
+          progress: undefined,
+          theme: "colored",
+        });
+      }
+    } catch (err) {
+      console.log("err", err);
+    }
     console.log("formik", formik);
-    console.log("obj", Object.keys(formik.errors).length);
   };
 
   const formik = useFormik({ initialValues, onSubmit, validationSchema });
